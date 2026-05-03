@@ -1,0 +1,35 @@
+baseURL = "https://blog.fabiorollin.com/"
+languageCode = "en-us"
+title = "Fabio Rollin · Notes"
+
+# No external theme — inline templates in layouts/ are used directly.
+disableKinds = ["taxonomy", "term"]
+
+# Generate /robots.txt and /sitemap.xml at build time so search engines can crawl.
+enableRobotsTXT = true
+
+[sitemap]
+  changefreq = "weekly"
+  priority   = 0.5
+  filename   = "sitemap.xml"
+
+[params]
+  description = "Notes on cloud infrastructure, Kubernetes, identity-driven access, and applied AI — by Fabio Rollin."
+  author = "Fabio Rollin"
+  github = "https://github.com/fabiorollin"
+  linkedin = "https://www.linkedin.com/in/fabiorollin"
+  homepage = "https://fabiorollin.com"
+
+[markup.highlight]
+  style = "github-dark"
+  noClasses = false
+  lineNos = false
+  codeFences = true
+  guessSyntax = true
+
+[markup.goldmark.renderer]
+  unsafe = true
+
+[markup.tableOfContents]
+  startLevel = 2
+  endLevel = 3

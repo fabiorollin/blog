@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="{{ .Site.LanguageCode }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} · {{ .Site.Title }}{{ end }}</title>
+  <meta name="description" content="{{ if .Description }}{{ .Description }}{{ else }}{{ .Site.Params.description }}{{ end }}" />
+  <meta name="author" content="{{ .Site.Params.author }}" />
+  <meta property="og:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }}{{ end }}" />
+  <meta property="og:description" content="{{ if .Description }}{{ .Description }}{{ else }}{{ .Site.Params.description }}{{ end }}" />
+  <meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}" />
+  <meta property="og:url" content="{{ .Permalink }}" />
+  <link rel="canonical" href="{{ .Permalink }}" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  {{ $css := resources.Get "css/main.css" | minify | fingerprint }}
+  <link rel="stylesheet" href="{{ $css.RelPermalink }}" />
+</head>
+<body>
+  {{ partial "header.html" . }}
+  <main class="container">
+    {{ block "main" . }}{{ end }}
+  </main>
+  {{ partial "footer.html" . }}
+
+  {{- /* Mermaid + scroll-reveal: only on pages that contain a ```mermaid block */ -}}
+  {{ if and .IsPage (in .Content "mermaid-wrap") }}
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'strict',
+      theme: 'base',
+      fontFamily: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+      themeVariables: {
+        // Match fabiorollin.com palette (slate-950 + indigo + fuchsia)
+        background:        '#0b1220',
+        primaryColor:      '#1e293b',          // slate-800 box fill
+        primaryTextColor:  '#e2e8f0',          // slate-200
+        primaryBorderColor:'#6366f1',          // indigo-500
+        secondaryColor:    '#0f172a',
+        tertiaryColor:     '#0b1220',
+        lineColor:         '#94a3b8',          // slate-400 arrows
+        textColor:         '#e2e8f0',
+        // Sequence diagrams
+        actorBkg:          '#1e293b',
+        actorBorder:       '#6366f1',
+        actorTextColor:    '#e2e8f0',
+        actorLineColor:    '#475569',
+        signalColor:       '#c7d2fe',          // indigo-200
+        signalTextColor:   '#e2e8f0',
+        labelBoxBkgColor:  '#1e1b4b',          // indigo-950
+        labelBoxBorderColor:'#6366f1',
+        labelTextColor:    '#e2e8f0',
+        loopTextColor:     '#94a3b8',
+        noteBkgColor:      'rgba(217,70,239,0.10)',
+        noteBorderColor:   'rgba(217,70,239,0.40)',
+        noteTextColor:     '#f0abfc',          // pink-fg
+        // State / flowchart
+        clusterBkg:        'rgba(99,102,241,0.06)',
+        clusterBorder:     'rgba(99,102,241,0.30)',
+        edgeLabelBackground:'#0b1220',
+      },
+    });
+
+    // Render all diagrams, then wire up the scroll-reveal animation.
+    await mermaid.run({ querySelector: '.mermaid' });
+
+    const wraps = document.querySelectorAll('.mermaid-wrap');
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add('in-view');
+            io.unobserve(e.target);
+          }
+        }
+      }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+      wraps.forEach((el) => io.observe(el));
+    } else {
+      // Fallback: just show them
+      wraps.forEach((el) => el.classList.add('in-view'));
+    }
+  </script>
+  {{ end }}
+
+  {{- /* LinkedIn share buttons: only on /digest/ posts (not the section index). */ -}}
+  {{ if and .IsPage (eq .Section "digest") }}
+  <script>
+    (function () {
+      const postUrl = {{ .Permalink | jsonify }};
+      const headings = document.querySelectorAll('.post-content h2');
+      headings.forEach((h) => {
+        if (!h.id) return; // Hugo gives every h2 an id automatically
+        const sectionUrl = postUrl.replace(/\/$/, '/') + '#' + h.id;
+        const linkedInUrl =
+          'https://www.linkedin.com/sharing/share-offsite/?url=' +
+          encodeURIComponent(sectionUrl);
+
+        const btn = document.createElement('a');
+        btn.href = linkedInUrl;
+        btn.target = '_blank';
+        btn.rel = 'noreferrer';
+        btn.className = 'share-li';
+        btn.title = 'Share this section on LinkedIn';
+        btn.setAttribute('aria-label', 'Share on LinkedIn: ' + h.textContent);
+        btn.innerHTML =
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+          '<path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5V8h3v11zM6.5 6.7A1.7 1.7 0 118.2 5a1.7 1.7 0 01-1.7 1.7zM19 19h-3v-5.6c0-1.3-.5-2.2-1.7-2.2a1.8 1.8 0 00-1.7 1.2 2.3 2.3 0 00-.1.8V19h-3V8h3v1.3a3 3 0 012.7-1.5c2 0 3.5 1.3 3.5 4.1V19z"/>' +
+          '</svg><span>Share</span>';
+        h.appendChild(btn);
+      });
+    })();
+  </script>
+  {{ end }}
+</body>
+</html>

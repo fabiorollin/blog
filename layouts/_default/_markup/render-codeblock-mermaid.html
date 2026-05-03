@@ -1,0 +1,9 @@
+{{- /*
+  Render hook: ```mermaid fenced blocks become <div class="mermaid-wrap"> for
+  Mermaid.js to hydrate after the page loads. The wrapper is what the
+  IntersectionObserver in baseof.html watches for the scroll-in animation.
+*/ -}}
+<figure class="mermaid-wrap" data-diagram>
+  <pre class="mermaid">{{- .Inner | safeHTML -}}</pre>
+  {{ with .Attributes.caption }}<figcaption class="diagram-caption">{{ . }}</figcaption>{{ end }}
+</figure>
